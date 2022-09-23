@@ -11,7 +11,7 @@ con = None
 unsent_payment_pattern = "(amount > 0 AND transaction_processdata IS NULL AND type_id = 2 AND processor_accepted = 0)"
 
 def load_fp_invoicenos():
-    with open('foobar.csv') as file:
+    with open({dir_path}+'/foobar.csv') as file:
         reader = csv.reader(file)
         fp_invoice_numbers = [row[7] for row in reader]
 
