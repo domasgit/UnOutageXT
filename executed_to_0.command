@@ -5,7 +5,7 @@ import sys
 
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
-print(f"working in folder {dir_path}....")
+print(f"\nworking in folder {dir_path}....\n")
 con = None
 
 unsent_payment_pattern = "(amount > 0 AND transaction_processdata IS NULL AND type_id = 2 AND processor_accepted = 0)"
@@ -25,9 +25,8 @@ def compare_invoicenos(db_invoicenos, fp_invoicenos):
     unsent_invoicenos = [invoiceno for invoiceno in db_invoicenos if invoiceno not in fp_invoicenos]
     return unsent_invoicenos
 
-def check_unsent_orders(cur, missing_invoicenos):
+def get_unsent_ordernos(cur, missing_invoicenos):
     ids = [x[0] for x in cur.execute(f"SELECT order_id FROM payment WHERE transaction_invoiceno IN ({','.join(missing_invoicenos)})").fetchall()]
-    #print(ids)
     unsent_ordernos = [x[0] for x in cur.execute(f"SELECT res_id FROM purchase_order WHERE id IN ({','.join(map(str, ids))})").fetchall()]
     return unsent_ordernos
 
@@ -45,37 +44,42 @@ def main():
         #print(f"fp invoicenos:{fp_invoicenos}")
         missing_invoicenos = compare_invoicenos(db_invoicenos, fp_invoicenos)
         #print(f"missing invoicenos:{missing_invoicenos}")
-        unsent_ordernos = check_unsent_orders(cur, missing_invoicenos)
+        unsent_ordernos = get_unsent_ordernos(cur, missing_invoicenos)
 
         if len(unsent_ordernos) == 0:
             print("No payments missing from FP")
             return
 
-        print(f"{len(unsent_ordernos)} orders have not been found in FP report. Order numbers:\n")
+        print(f"{len(unsent_ordernos)} orders have not been found in FP report. Order numbers:")
         print(unsent_ordernos)
-        
 
-#        invoicenos = cur.execute(f"SELECT transaction_invoiceno FROM payment WHERE {unsent_payment_pattern}").fetchall()
-#        db_invoicenos = [x[0] for x in cur.execute(f"SELECT transaction_invoiceno FROM payment WHERE {unsent_payment_pattern}").fetchall()]
-#        print(db_invoicenos)
-
-#        unsent_invoicenos = [invoiceno for invoiceno in db_invoicenos if invoiceno not in fp_invoicenos]
-#        print(unsent_invoicenos)
+        while True:
+            user_continue = input("\nWould you like to continue? (y/n)")
+            if user_continue == 'n':
+                print("no selected - exiting...")
+                #con.close()
+                sys.exit()
+            elif user_continue == 'y':
+                print ("yes selected - preparing database...")
+                break
+            elif user_continue != 'n' and user_continue != 'y':
+                print ("incorrect input, enter y to continue or n to close")
 
         #check for unsent orders and mark sent
         cur.execute("UPDATE purchase_order SET status = 2 WHERE status = 0")
 
         #run executed fixer
-        #cur.execute(f"UPDATE payment SET executed = 0 WHERE transaction_invoiceno IN ({','.join(unsent_invoicenos)})")
+        cur.execute(f"UPDATE payment SET executed = 0 WHERE transaction_invoiceno IN ({','.join(missing_invoicenos)})")
         con.commit()
         con.close()
+        print("Sucess")
 
     except sqlite3.Error as e:
         print(f"Error {e.args[0]}")
         return
         
-#    finally:
-#        os.rename(dir_path+"/db.sqlite",dir_path+"/pos2v.sqlite")
+    finally:
+        os.rename(dir_path+"/db.sqlite",dir_path+"/pos2v.sqlite")
 
 
 if __name__ == "__main__":
