@@ -70,9 +70,14 @@ def main():
 
         #run executed fixer
         cur.execute(f"UPDATE payment SET executed = 0 WHERE transaction_invoiceno IN ({','.join(missing_invoicenos)})")
+
+        #skip customer sync to make DB load faster
+        cur.execute("UPDATE settings SET setting_value = "no" WHERE setting_name = 1222")
+        cur.execute("UPDATE settings SET setting_value = 1917706408 WHERE setting_name = 1139")
+
+        #commit changes
         con.commit()
         con.close()
-        print("Sucess")
 
     except sqlite3.Error as e:
         print(f"Error {e.args[0]}")
@@ -80,6 +85,7 @@ def main():
         
     finally:
         os.rename(dir_path+"/db.sqlite",dir_path+"/pos2v.sqlite")
+        print("Sucess")
 
 
 if __name__ == "__main__":
