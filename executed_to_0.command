@@ -72,7 +72,7 @@ def main():
         cur.execute(f"UPDATE payment SET executed = 0 WHERE transaction_invoiceno IN ({','.join(missing_invoicenos)})")
 
         #skip customer sync to make DB load faster
-        cur.execute("UPDATE settings SET setting_value = "no" WHERE setting_name = 1222")
+        cur.execute("UPDATE settings SET setting_value = 'no' WHERE setting_name = 1222")
         cur.execute("UPDATE settings SET setting_value = 1917706408 WHERE setting_name = 1139")
 
         #commit changes
