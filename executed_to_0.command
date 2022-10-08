@@ -41,6 +41,7 @@ def main():
         if len(db_invoicenos) == 0:
             print("No unsent payments found in DB")
             con.close()
+            print("Closing...")
             return
         fp_invoicenos = load_fp_invoicenos()
         #print(f"fp invoicenos:{fp_invoicenos}")
@@ -51,6 +52,7 @@ def main():
         if len(unsent_ordernos) == 0:
             print("No payments missing from FP")
             con.close()
+            print("Closing...")
             return
 
         print(f"{len(unsent_ordernos)} orders have not been found in FP report. Order numbers:")
@@ -60,7 +62,7 @@ def main():
             user_continue = input("\nWould you like to continue? (y/n)")
             if user_continue == 'n':
                 print("no selected - exiting...")
-                #con.close()
+                con.close()
                 sys.exit()
             elif user_continue == 'y':
                 print ("yes selected - preparing database...")
@@ -81,14 +83,15 @@ def main():
         #commit changes
         con.commit()
         con.close()
-        
+        print("Success")
+
     except sqlite3.Error as e:
         print(f"Error {e.args[0]}")
         return
         
     finally:
         os.rename(dir_path+"/db.sqlite",dir_path+"/pos2v.sqlite")
-        print("Sucess")
+        print("Finished")
 
 
 if __name__ == "__main__":
