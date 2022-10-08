@@ -2,6 +2,7 @@
 
 import sqlite3, os, csv
 import sys
+import time
 
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
@@ -39,6 +40,7 @@ def main():
         #print(f"db invoicenos:{db_invoicenos}")
         if len(db_invoicenos) == 0:
             print("No unsent payments found in DB")
+            con.close()
             return
         fp_invoicenos = load_fp_invoicenos()
         #print(f"fp invoicenos:{fp_invoicenos}")
@@ -48,6 +50,7 @@ def main():
 
         if len(unsent_ordernos) == 0:
             print("No payments missing from FP")
+            con.close()
             return
 
         print(f"{len(unsent_ordernos)} orders have not been found in FP report. Order numbers:")
@@ -78,7 +81,7 @@ def main():
         #commit changes
         con.commit()
         con.close()
-
+        
     except sqlite3.Error as e:
         print(f"Error {e.args[0]}")
         return
